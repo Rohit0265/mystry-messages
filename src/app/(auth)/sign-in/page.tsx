@@ -20,6 +20,7 @@ import { InputGroup, InputGroupAddon, InputGroupText, InputGroupTextarea } from 
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { signInSchema } from "@/schemas/signInSchema"
+import { signIn } from "next-auth/react"
 
 const page = () => {
 
@@ -34,12 +35,22 @@ const page = () => {
     const form = useForm({
       resolver:zodResolver(signInSchema),
       defaultValues:{
-        email:'',
+        identifier:'',
         password:''
       }
     })
 
-    const onSubmit = async (data:z.infer<typeof signUpSchema>) =>{
+    const onSubmit = async (data:z.infer<typeof signInSchema>) =>{
+      const result = await signIn('credentials',{
+        redirect:false,
+        identifier:data.identifier,
+        password:data.password
+      })
+      if(result?.error){
+        toast("Login Failed")
+      }if(result?.url){
+        router.replace('/dashboard')
+      }
       
     }
 
@@ -50,7 +61,7 @@ const page = () => {
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
             Join Mystery Message
           </h1>
-          <p className="mb-4">Sig up to start your anonymous adventure</p>
+          <p className="mb-4">Sig in to start your anonymous adventure</p>
         </div>
 
 
@@ -59,52 +70,18 @@ const page = () => {
         <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="username"
+              name="identifier"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-rhf-demo-title">
-                    Username
+                    Email/Username
                   </FieldLabel>
                   <Input
                     {...field}
                     id="form-rhf-demo-title"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Username"
-                    autoComplete="off"
-                    onChange={(e)=>{
-                      field.onChange(e)
-                      debounce(e.target.value)
-                    }}
-                  /> {isCheckingUsername && <Loader2 className="animate-spin"/>
-            }
-            <p className={`text-sm ${username === "Username is unique" ? "text-green-500" :"text-red-500"}`}>
-                test {usernameMessage}
-            </p>
-
-
-
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-  
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
-                    Email
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-rhf-demo-title"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="email"
+                    placeholder="email/username"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -127,10 +104,6 @@ const page = () => {
                     aria-invalid={fieldState.invalid}
                     placeholder="password"
                     autoComplete="off"
-                    onChange={(e)=>{
-                      field.onChange(e)
-                      setusername(e.target.value)
-                    }}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -143,25 +116,15 @@ const page = () => {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="submit" disabled={isSubmitting} form="form-rhf-demo">
-            {
-              isSubmitting ? (
-                <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                Please wait
-
-                </>
-              ):(
-                'Signup'
-              )
-          }
+          <Button type="submit" form="form-rhf-demo">
+            Signin
           </Button>
         </Field>
       </CardFooter>
     </Card>
 
     <div className="text-center">
-      <p >Already a member ? <Link className="text-blue-700" href="/sign-in">Sign In</Link></p>
+      <p >New User ? <Link className="text-blue-700" href="/sign-in">Sign Up</Link></p>
     </div>
       </div>
       
