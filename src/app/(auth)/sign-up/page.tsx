@@ -112,7 +112,7 @@ const page = () => {
                       field.onChange(e)
                       debounce(e.target.value)
                     }}
-                  />               {isCheckingUsername && <Loader2 className="animate-spin"/>
+                  /> {isCheckingUsername && <Loader2 className="animate-spin"/>
             }
             <p className={`text-sm ${username === "Username is unique" ? "text-green-500" :"text-red-500"}`}>
                 test {usernameMessage}
